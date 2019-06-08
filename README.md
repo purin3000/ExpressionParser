@@ -1,18 +1,62 @@
 # ExpressionParser
 
-## 概要
+## Overview
+
 実行時の速度を重視した式解釈の仕組み。
 
 外部から関数を追加が可能。
 
 最初に構文木を作る時以外はアロケートは一切入りません。
 
-## 記述一覧
+A system of expression interpretation that emphasizes the speed at execution time.
 
-|種類|記述|例|
-|----|----|----|
-|値|int|10,0xa|
-|文字列|string|"str"|
-|演算子|+-*/%!| (-1 + 2) * 3 |
-|比較式|==,!=,<,<=,>,>=| 2 < 4 |
+External functions can be added.
 
+It does not contain any allocate except when creating the syntax tree first.
+
+## Description
+
+| Type | Description | Example |
+| ---- | ---- | ---- |
+| Value type | int | 10, 0 xa |
+| String type | string | "str" |
+| Operator | +-* /%! | (-1 + 2) * 3 |
+| Comparative expressions | ==,! =, <, <=,>,> = | 2 <4 |
+
+## Example 
+
+    using expression_parser;
+    
+    public class CalcTest : MonoBehaviour
+    {
+        public ExampleParser parser = new ExampleParser();
+    
+        private void OnGUI()
+        {
+            var ret = parser.Parse("SUM(1, 2) == 3");
+            GUILayout.Label(string.Format("Ans:{0}", ret), GUILayout.Height(100));
+        }
+    }
+    
+    public class ExampleParser : ExpressionParser
+    {
+        public ExampleParser()
+        {
+            // Add Custom Function
+            RegistFunc("Sum", SumFunc);
+        }
+    
+        public ExpressionValue SumFunc(List<ExpressionValue> args, int argc)
+        {
+            Profile.Begin("SumFunc");
+            int total = 0;
+            for (int i = 0; i < argc; ++i) {
+                var arg = args[i];
+                if (arg.type == ExpressionValue.ValueType.IntValue) {
+                    total += arg.intValue;
+                }
+            }
+            Profile.End();
+            return ExpressionValue.Create(total);
+        }
+    }
