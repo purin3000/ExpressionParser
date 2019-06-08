@@ -4,9 +4,9 @@ using UnityEngine;
 
 using expression_parser;
 
-public class CalcTest : MonoBehaviour
+public class SpeedTest : MonoBehaviour
 {
-    public TestPaser parser = new TestPaser();
+    public ExampleParser parser = new ExampleParser();
 
     public int loopCount = 1000;
 
@@ -14,25 +14,23 @@ public class CalcTest : MonoBehaviour
 
     private void Update()
     {
-        Profile.Begin("Total");
         for (int i = 0; i < loopCount; ++i) {
             parser.Parse(expr);
         }
-        Profile.End();
     }
 
     private void OnGUI()
     {
         var ret = parser.Parse(expr);
-        GUILayout.Label(string.Format("Ans:{0}", ret), GUILayout.Height(100));
+        GUILayout.Label(string.Format("Ans:{0}", ret.intValue));
     }
 }
 
-
-public class TestPaser : ExpressionParser
+public class ExampleParser : ExpressionParser
 {
-    public TestPaser()
+    public ExampleParser()
     {
+        // Add Custom Function
         RegistFunc("Sum", SumFunc);
     }
 
