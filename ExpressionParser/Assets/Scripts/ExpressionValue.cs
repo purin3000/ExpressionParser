@@ -45,12 +45,11 @@ namespace expression_parser
             FuncName,
         }
 
-        public static readonly ExpressionValue None = new ExpressionValue();
-
         public int intValue;
         public object objValue;
-
         public ValueType type;
+
+        public static readonly ExpressionValue None = new ExpressionValue();
 
         public int argCount { get { return intValue; } }
 
@@ -146,25 +145,25 @@ namespace expression_parser
             return false;
         }
 
-        //public override bool Equals(object obj)
-        //{
-        //    if (obj != null && obj is ExpressionValue) {
-        //        ExpressionValue dst = (ExpressionValue)obj; //boxing発生するが仕方がない
-        //        return (type == dst.type && intValue == dst.intValue && stringValue == dst.stringValue && argCount == dst.argCount);
-        //    }
-        //    return base.Equals(obj);
-        //}
+        public override bool Equals(object obj)
+        {
+            if (obj != null && obj is ExpressionValue) {
+                ExpressionValue dst = (ExpressionValue)obj; //boxing発生するが仕方がない
+                return (type == dst.type && intValue == dst.intValue && stringValue == dst.stringValue && argCount == dst.argCount);
+            }
+            return base.Equals(obj);
+        }
 
-        //public override int GetHashCode()
-        //{
-        //    return base.GetHashCode();
-        //}
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 
-        //public static ExpressionValue operator !(ExpressionValue right)
-        //{
-        //    if (right.type == ValueType.IntValue) return Create(right.intValue == 0? 1:0);
-        //    throw new System.Exception(string.Format("計算できない式です op:! right:{0}", right));
-        //}
+        public static ExpressionValue operator !(ExpressionValue right)
+        {
+            if (right.type == ValueType.IntValue) return Create(right.intValue == 0 ? 1 : 0);
+            throw new System.Exception(string.Format("計算できない式です op:! right:{0}", right));
+        }
 
         public static ExpressionValue operator-(ExpressionValue right)
         {
@@ -218,6 +217,15 @@ namespace expression_parser
             throw new System.Exception(string.Format("計算できない式です op:/ left:{0} right:{1}", left, right));
         }
 
+        public static ExpressionValue operator %(ExpressionValue left, ExpressionValue right)
+        {
+            if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
+                return Create(left.intValue % right.intValue);
+            }
+
+            throw new System.Exception(string.Format("計算できない式です op:% left:{0} right:{1}", left, right));
+        }
+
         public static ExpressionValue operator <(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
@@ -254,45 +262,47 @@ namespace expression_parser
             throw new System.Exception(string.Format("計算できない式です op:>= left:{0} right:{1}", left, right));
         }
 
-        //public static ExpressionValue operator ==(ExpressionValue left, ExpressionValue right)
-        //{
-        //    if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-        //        return Create(left.intValue == right.intValue);
-        //    }
+        public static ExpressionValue operator ==(ExpressionValue left, ExpressionValue right)
+        {
+            if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
+                return Create(left.intValue == right.intValue);
+            }
 
-        //    throw new System.Exception(string.Format("計算できない式です op:== left:{0} right:{1}", left, right));
-        //}
+            throw new System.Exception(string.Format("計算できない式です op:== left:{0} right:{1}", left, right));
+        }
 
-        //public static ExpressionValue operator !=(ExpressionValue left, ExpressionValue right)
-        //{
-        //    if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-        //        return Create(left.intValue == right.intValue);
-        //    }
+        public static ExpressionValue operator !=(ExpressionValue left, ExpressionValue right)
+        {
+            if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
+                return Create(left.intValue == right.intValue);
+            }
 
-        //    throw new System.Exception(string.Format("計算できない式です op:!= left:{0} right:{1}", left, right));
-        //}
+            throw new System.Exception(string.Format("計算できない式です op:!= left:{0} right:{1}", left, right));
+        }
 
         // && || 演算子の実装。C#だとtrueやoperator&の実装を行う形になるようだ
-        //public static bool operator true(ExpressionValue right)
-        //{
-        //    if (right.type == ValueType.IntValue) return right.intValue != 0;
-        //    if (right.type == ValueType.StringValue) return !string.IsNullOrEmpty(right.stringValue);
-        //    throw new System.Exception(string.Format("計算できない式です op:true right:{0}", right));
-        //}
+        public static bool operator true(ExpressionValue right)
+        {
+            if (right.type == ValueType.IntValue) return right.intValue != 0;
+            if (right.type == ValueType.StringValue) return !string.IsNullOrEmpty(right.stringValue);
+            throw new System.Exception(string.Format("計算できない式です op:true right:{0}", right));
+        }
 
-        //public static bool operator false(ExpressionValue right)
-        //{
-        //    if (right.type == ValueType.IntValue) return right.intValue == 0;
-        //    if (right.type == ValueType.StringValue) return string.IsNullOrEmpty(right.stringValue);
-        //    throw new System.Exception(string.Format("計算できない式です op:false right:{0}", right));
-        //}
-        //public static ExpressionValue operator &(ExpressionValue left, ExpressionValue right)
-        //{
-        //    return Create((bool)left && (bool)right);
-        //}
-        //public static ExpressionValue operator |(ExpressionValue left, ExpressionValue right)
-        //{
-        //    return Create((bool)left || (bool)right);
-        //}
+        public static bool operator false(ExpressionValue right)
+        {
+            if (right.type == ValueType.IntValue) return right.intValue == 0;
+            if (right.type == ValueType.StringValue) return string.IsNullOrEmpty(right.stringValue);
+            throw new System.Exception(string.Format("計算できない式です op:false right:{0}", right));
+        }
+
+        public static ExpressionValue operator &(ExpressionValue left, ExpressionValue right)
+        {
+            return Create((bool)left && (bool)right);
+        }
+
+        public static ExpressionValue operator |(ExpressionValue left, ExpressionValue right)
+        {
+            return Create((bool)left || (bool)right);
+        }
     }
 }

@@ -135,12 +135,7 @@ public class ExpressionParser
                         Profile.Begin("ModOp");
                         var right = _calcStack.Pop();
                         var left = _calcStack.Pop();
-                        if (left.type == ExpressionValue.ValueType.IntValue && right.type == ExpressionValue.ValueType.IntValue) {
-                            _calcStack.Push(ExpressionValue.Create(left.intValue % right.intValue));
-                        } else {
-                            throw new System.Exception(string.Format("計算できない式です op:% left:{0} right:{1}", left, right));
-                        }
-                        //_calcStack.Push(left % right);
+                        _calcStack.Push(left % right);
                         Profile.End();
                         break;
                     }
@@ -157,12 +152,7 @@ public class ExpressionParser
                         Profile.Begin("EQ");
                         var right = _calcStack.Pop();
                         var left = _calcStack.Pop();
-                        if (left.type == ExpressionValue.ValueType.IntValue && right.type == ExpressionValue.ValueType.IntValue) {
-                            _calcStack.Push(ExpressionValue.Create(left.intValue == right.intValue));
-                        } else {
-                            throw new System.Exception(string.Format("計算できない式です op:== left:{0} right:{1}", left, right));
-                        }
-                        //_calcStack.Push(left == right);
+                        _calcStack.Push(left == right);
                         Profile.End();
                         break;
                     }
@@ -171,12 +161,7 @@ public class ExpressionParser
                         Profile.Begin("NEQ");
                         var right = _calcStack.Pop();
                         var left = _calcStack.Pop();
-                        if (left.type == ExpressionValue.ValueType.IntValue && right.type == ExpressionValue.ValueType.IntValue) {
-                            _calcStack.Push(ExpressionValue.Create(left.intValue == right.intValue));
-                        } else {
-                            throw new System.Exception(string.Format("計算できない式です op:!= left:{0} right:{1}", left, right));
-                        }
-                        //_calcStack.Push(left != right);
+                        _calcStack.Push(left != right);
                         Profile.End();
                         break;
                     }
@@ -221,8 +206,7 @@ public class ExpressionParser
                         Profile.Begin("And");
                         var right = _calcStack.Pop();
                         var left = _calcStack.Pop();
-                        _calcStack.Push(ExpressionValue.Create((bool)left && (bool)right));
-                        //_calcStack.Push(left && right);
+                        _calcStack.Push(left && right);
                         Profile.End();
                         break;
                     }
@@ -231,8 +215,7 @@ public class ExpressionParser
                         Profile.Begin("Or");
                         var right = _calcStack.Pop();
                         var left = _calcStack.Pop();
-                        _calcStack.Push(ExpressionValue.Create((bool)left || (bool)right));
-                        //_calcStack.Push(left || right);
+                        _calcStack.Push(left || right);
                         Profile.End();
                         break;
                     }
@@ -240,12 +223,7 @@ public class ExpressionParser
                 case CommandType.Not: {
                         Profile.Begin("Not");
                         var right = _calcStack.Pop();
-                        if (right.type == ExpressionValue.ValueType.IntValue) {
-                            _calcStack.Push(ExpressionValue.Create(!(bool)right));
-                        } else {
-                            throw new System.Exception(string.Format("計算できない式です op:! right:{0}", right));
-                        }
-                        //_calcStack.Push(!right);
+                        _calcStack.Push(!right);
                         Profile.End();
                         break;
                     }
@@ -253,22 +231,22 @@ public class ExpressionParser
                 case CommandType.CallFunc: {
                         Profile.Begin("CallFunc");
 
-                        Profile.Begin("arg");
+                        //Profile.Begin("arg");
                         var info = _valueList[valueIndex++];
 
                         Debug.Assert(info.argCount < _argList.Count);
                         for (int i = info.argCount - 1; 0 <= i; --i) {
                             _argList[i] = _calcStack.Pop();
                         }
-                        Profile.End();
+                        //Profile.End();
 
                         Profile.Begin("call");
                         var ret = info.func(_argList, info.argCount);
                         Profile.End();
 
-                        Profile.Begin("push");
+                        //Profile.Begin("push");
                         _calcStack.Push(ret);
-                        Profile.End();
+                        //Profile.End();
 
                         Profile.End();
                         break;
