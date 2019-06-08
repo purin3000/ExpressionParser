@@ -23,12 +23,12 @@ namespace expression_parser
 
 #else
         [System.Diagnostics.Conditional("DEBUG")]
-        public static void BeginSample(string label)
+        public static void Begin(string label)
         {
         }
 
         [System.Diagnostics.Conditional("DEBUG")]
-        public static void EndSample()
+        public static void End()
         {
         }
 #endif
