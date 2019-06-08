@@ -18,10 +18,10 @@ It does not contain any allocate except when creating the syntax tree first.
 
 | Type | Description | Example |
 | ---- | ---- | ---- |
-| Value type | int | 10, 0 xa |
+| Value type | int | 10, 0xA |
 | String type | string | "str" |
-| Operator | +-* /%! | (-1 + 2) * 3 |
-| Comparative expressions | ==,! =, <, <=,>,> = | 2 <4 |
+| Operator | +,-,*,/,%,!,(,) | (-1 + 2) * 3 |
+| Comparative expressions | ==,! =, <, <=,>,> = | 2 < 4 |
 
 ## Example 
 
@@ -34,7 +34,7 @@ It does not contain any allocate except when creating the syntax tree first.
         private void OnGUI()
         {
             var ret = parser.Parse("SUM(1, 2) == 3");
-            GUILayout.Label(string.Format("Ans:{0}", ret), GUILayout.Height(100));
+            GUILayout.Label(string.Format("Ans:{0}", ret.intValue));
         }
     }
     
@@ -42,13 +42,11 @@ It does not contain any allocate except when creating the syntax tree first.
     {
         public ExampleParser()
         {
-            // Add Custom Function
-            RegistFunc("Sum", SumFunc);
+            RegistFunc("Sum", SumFunc);  // Add Custom Function
         }
     
         public ExpressionValue SumFunc(List<ExpressionValue> args, int argc)
         {
-            Profile.Begin("SumFunc");
             int total = 0;
             for (int i = 0; i < argc; ++i) {
                 var arg = args[i];
@@ -56,7 +54,6 @@ It does not contain any allocate except when creating the syntax tree first.
                     total += arg.intValue;
                 }
             }
-            Profile.End();
             return ExpressionValue.Create(total);
         }
     }
