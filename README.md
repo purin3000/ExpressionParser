@@ -6,13 +6,13 @@
 
 外部から関数を追加が可能。
 
-最初に構文木を作る時以外はアロケートは一切入りません。
+最初に構文木を作る時以外はヒープのアロケートが入りません。
 
 A system of expression interpretation that emphasizes the speed at execution time.
 
 External functions can be added.
 
-It does not contain any allocate except when creating the syntax tree first.
+There is no heap allocation except when you first create a parse tree.
 
 ## Description
 

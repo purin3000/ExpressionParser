@@ -460,12 +460,12 @@ public class ExpressionParser
         if (regDecNumber.IsMatch(code)) {
             ++_pos;
             _commandList.Add(CommandType.Value);
-            _valueList.Add(ExpressionValue.Create(System.Convert.ToInt32(code)));
+            _valueList.Add(new ExpressionValue(System.Convert.ToInt32(code)));
 
         } else if (regHexNumber.IsMatch(code)) {
             ++_pos;
             _commandList.Add(CommandType.Value);
-            _valueList.Add(ExpressionValue.Create(System.Convert.ToInt32(code.Substring(2, code.Length - 2), 16)));
+            _valueList.Add(new ExpressionValue(System.Convert.ToInt32(code.Substring(2, code.Length - 2), 16)));
         } else {
             throw new System.Exception("値ではありません str:" + code);
         }
@@ -477,7 +477,7 @@ public class ExpressionParser
         // parseValueで記述チェック済みなのでノーチェック
         var code = _words[_pos++];
         _commandList.Add(CommandType.Value);
-        _valueList.Add(ExpressionValue.Create(code.Substring(1, code.Length - 2)));
+        _valueList.Add(new ExpressionValue(code.Substring(1, code.Length - 2)));
     }
 
     // <func_call> ::= <variableName> '(' <parameter_list> ')'
@@ -505,7 +505,7 @@ public class ExpressionParser
                 ExpressionParserFunc func;
                 if (_funcs.TryGetValue(funcName.ToLower(), out func)) {
                     _commandList.Add(CommandType.CallFunc);
-                    _valueList.Add(ExpressionValue.Create(func, count));
+                    _valueList.Add(new ExpressionValue(func, count));
                 } else {
                     throw new System.Exception("未登録の関数です FuncName:" + funcName);
                 }

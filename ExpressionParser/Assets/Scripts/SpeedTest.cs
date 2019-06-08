@@ -45,7 +45,7 @@ public class ExampleParser : ExpressionParser
             }
         }
         Profile.End();
-        return ExpressionValue.Create(total);
+        return new ExpressionValue(total);
     }
 
 }

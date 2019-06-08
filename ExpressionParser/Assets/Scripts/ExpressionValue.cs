@@ -35,7 +35,7 @@ namespace expression_parser
 
     }
 
-    public struct ExpressionValue
+    public readonly struct ExpressionValue
     {
         public enum ValueType
         {
@@ -45,73 +45,55 @@ namespace expression_parser
             FuncName,
         }
 
-        public int intValue;
-        public object objValue;
-        public ValueType type;
+        readonly int _intValue;
+        readonly object _objValue;
+        readonly ValueType _type;
 
-        public static readonly ExpressionValue None = new ExpressionValue();
+        public ValueType type => _type;
 
-        public int argCount { get { return intValue; } }
+        public int argCount => _intValue;
 
-        public string stringValue { get { return (string)objValue; } }
+        public int intValue => _intValue;
 
-        public ExpressionParserFunc func { get { return (ExpressionParserFunc)objValue; } }
+        public string stringValue => (string)_objValue;
 
-        public static ExpressionValue Create()
+        public ExpressionParserFunc func => (ExpressionParserFunc)_objValue;
+
+        public static readonly ExpressionValue None = new ExpressionValue(ValueType.None, 0, string.Empty);
+
+        public ExpressionValue(ValueType type, int intVal, object objVal)
         {
-            return None;
+            _type = type;
+            _intValue = intVal;
+            _objValue = objVal;
         }
 
-        public static ExpressionValue Create(bool val)
+        public ExpressionValue(bool val)
         {
-            Profile.Begin("Create(bool val)");
-            ExpressionValue ret;
-
-            ret.type = ValueType.IntValue;
-            ret.intValue = val? 1:0;
-            ret.objValue = string.Empty;
-
-            Profile.End();
-            return ret;
+            _type = ValueType.IntValue;
+            _intValue = val ? 1 : 0;
+            _objValue = string.Empty;
         }
 
-        public static ExpressionValue Create(int val)
+        public ExpressionValue(int val)
         {
-            Profile.Begin("Create(int val)");
-            ExpressionValue ret;
-
-            ret.type = ValueType.IntValue;
-            ret.intValue = val;
-            ret.objValue = string.Empty;
-
-            Profile.End();
-            return ret;
+            _type = ValueType.IntValue;
+            _intValue = val;
+            _objValue = string.Empty;
         }
 
-        public static ExpressionValue Create(string str)
+        public ExpressionValue(string str)
         {
-            Profile.Begin("Create(string str)");
-            ExpressionValue ret;
-
-            ret.type = ValueType.StringValue;
-            ret.intValue = 0;
-            ret.objValue = str;
-
-            Profile.End();
-            return ret;
+            _type = ValueType.StringValue;
+            _intValue = 0;
+            _objValue = str;
         }
 
-        public static ExpressionValue Create(ExpressionParserFunc func, int argCount)
+        public ExpressionValue(ExpressionParserFunc func, int argCount)
         {
-            Profile.Begin("Create(ExpressionParserFunc func, int argCount)");
-            ExpressionValue ret;
-
-            ret.type = ValueType.FuncName;
-            ret.intValue = argCount;
-            ret.objValue = func;
-
-            Profile.End();
-            return ret;
+            _type = ValueType.FuncName;
+            _intValue = argCount;
+            _objValue = func;
         }
 
         public override string ToString()
@@ -161,14 +143,14 @@ namespace expression_parser
 
         public static ExpressionValue operator !(ExpressionValue right)
         {
-            if (right.type == ValueType.IntValue) return Create(right.intValue == 0 ? 1 : 0);
+            if (right.type == ValueType.IntValue) return new ExpressionValue(right.intValue == 0);
             throw new System.Exception(string.Format("計算できない式です op:! right:{0}", right));
         }
 
         public static ExpressionValue operator-(ExpressionValue right)
         {
             if (right.type == ValueType.IntValue) {
-                return Create(-right.intValue);
+                return new ExpressionValue(-right.intValue);
             }
             throw new System.Exception(string.Format("計算できない式です op:- right:{0}", right));
         }
@@ -176,15 +158,15 @@ namespace expression_parser
         public static ExpressionValue operator +(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue + right.intValue);
+                return new ExpressionValue(left.intValue + right.intValue);
             }
 
             if (left.type == ValueType.StringValue && right.type == ValueType.StringValue) {
-                return Create(left.stringValue + right.stringValue);
+                return new ExpressionValue(left.stringValue + right.stringValue);
             }
 
             if (left.type == ValueType.StringValue && right.type == ValueType.IntValue) {
-                return Create(left.stringValue + right.intValue);
+                return new ExpressionValue(left.stringValue + right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:+ left:{0} right:{1}", left, right));
@@ -193,7 +175,7 @@ namespace expression_parser
         public static ExpressionValue operator -(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue - right.intValue);
+                return new ExpressionValue(left.intValue - right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:- left:{0} right:{1}", left, right));
@@ -202,7 +184,7 @@ namespace expression_parser
         public static ExpressionValue operator *(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue * right.intValue);
+                return new ExpressionValue(left.intValue * right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:* left:{0} right:{1}", left, right));
@@ -211,7 +193,7 @@ namespace expression_parser
         public static ExpressionValue operator /(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue * right.intValue);
+                return new ExpressionValue(left.intValue * right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:/ left:{0} right:{1}", left, right));
@@ -220,7 +202,7 @@ namespace expression_parser
         public static ExpressionValue operator %(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue % right.intValue);
+                return new ExpressionValue(left.intValue % right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:% left:{0} right:{1}", left, right));
@@ -229,7 +211,7 @@ namespace expression_parser
         public static ExpressionValue operator <(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue < right.intValue);
+                return new ExpressionValue(left.intValue < right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:< left:{0} right:{1}", left, right));
@@ -238,7 +220,7 @@ namespace expression_parser
         public static ExpressionValue operator >(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue > right.intValue);
+                return new ExpressionValue(left.intValue > right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:> left:{0} right:{1}", left, right));
@@ -247,7 +229,7 @@ namespace expression_parser
         public static ExpressionValue operator <=(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue <= right.intValue);
+                return new ExpressionValue(left.intValue <= right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:<= left:{0} right:{1}", left, right));
@@ -256,7 +238,7 @@ namespace expression_parser
         public static ExpressionValue operator >=(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue >= right.intValue);
+                return new ExpressionValue(left.intValue >= right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:>= left:{0} right:{1}", left, right));
@@ -265,7 +247,7 @@ namespace expression_parser
         public static ExpressionValue operator ==(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue == right.intValue);
+                return new ExpressionValue(left.intValue == right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:== left:{0} right:{1}", left, right));
@@ -274,7 +256,7 @@ namespace expression_parser
         public static ExpressionValue operator !=(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return Create(left.intValue == right.intValue);
+                return new ExpressionValue(left.intValue == right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:!= left:{0} right:{1}", left, right));
@@ -297,12 +279,12 @@ namespace expression_parser
 
         public static ExpressionValue operator &(ExpressionValue left, ExpressionValue right)
         {
-            return Create((bool)left && (bool)right);
+            return new ExpressionValue((bool)left && (bool)right);
         }
 
         public static ExpressionValue operator |(ExpressionValue left, ExpressionValue right)
         {
-            return Create((bool)left || (bool)right);
+            return new ExpressionValue((bool)left || (bool)right);
         }
     }
 }
