@@ -8,6 +8,12 @@ using expression_parser;
 
 namespace expression_parser
 {
+    /// <summary>
+    /// Custom Function
+    /// </summary>
+    /// <param name="args"></param>
+    /// <param name="argc"></param>
+    /// <returns></returns>
     public delegate ExpressionValue ExpressionParserFunc(List<ExpressionValue> args, int argc);
 }
 
@@ -35,6 +41,7 @@ public class ExpressionParser
     enum CommandType
     {
         None,
+
         Value,
         AddOp,
         SubOp,
@@ -229,26 +236,25 @@ public class ExpressionParser
                     }
 
                 case CommandType.CallFunc: {
-                        Profile.Begin("CallFunc");
-
                         //Profile.Begin("arg");
                         var info = _valueList[valueIndex++];
+                        if (info.argCount < _argList.Count) {
+                            Profile.Begin("CallFunc");
 
-                        Debug.Assert(info.argCount < _argList.Count);
-                        for (int i = info.argCount - 1; 0 <= i; --i) {
-                            _argList[i] = _calcStack.Pop();
+                            for (int i = info.argCount - 1; 0 <= i; --i) {
+                                _argList[i] = _calcStack.Pop();
+                            }
+
+                            Profile.Begin("call");
+                            var ret = info.func(_argList, info.argCount);
+                            Profile.End();
+
+                            _calcStack.Push(ret);
+
+                            Profile.End();
+                        } else {
+                            throw new System.Exception(string.Format("引数が多すぎます Capacity:{0}", _argList.Count));
                         }
-                        //Profile.End();
-
-                        Profile.Begin("call");
-                        var ret = info.func(_argList, info.argCount);
-                        Profile.End();
-
-                        //Profile.Begin("push");
-                        _calcStack.Push(ret);
-                        //Profile.End();
-
-                        Profile.End();
                         break;
                     }
                 }

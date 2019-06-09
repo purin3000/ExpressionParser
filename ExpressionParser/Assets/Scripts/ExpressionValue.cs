@@ -1,4 +1,4 @@
-﻿#define PROFILE_ENABLE
+﻿//#define PROFILE_ENABLE
 
 using System.Collections;
 using System.Collections.Generic;
@@ -262,7 +262,6 @@ namespace expression_parser
             throw new System.Exception(string.Format("計算できない式です op:!= left:{0} right:{1}", left, right));
         }
 
-        // && || 演算子の実装。C#だとtrueやoperator&の実装を行う形になるようだ
         public static bool operator true(ExpressionValue right)
         {
             if (right.type == ValueType.IntValue) return right.intValue != 0;
