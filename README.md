@@ -21,7 +21,7 @@ There is no heap allocation except when you first create a parse tree.
 | Value type | int | 10, 0xA |
 | String type | string | "str" |
 | Operator | +,-,*,/,%,!,(,) | (-1 + 2) * 3 |
-| Comparative expressions | ==,! =, <, <=,>,> = | 2 < 4 |
+| Comparative expressions | ==,!=,<,<=,>,>= | 2 < 4 |
 
 ## Example 
 
