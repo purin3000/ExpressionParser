@@ -2,17 +2,29 @@
 
 ## Overview
 
-実行時の速度を重視した式解釈の仕組み。
+実行時の速度を重視した式解釈の仕組み。Luaの10倍以上早いはず。
 
-外部から関数を追加が可能。
+外部から関数を追加が可能で、整数もしくは文字列を返すことができます。
 
 最初に構文木を作る時以外はヒープのアロケートが入りません。
 
-A system of expression interpretation that emphasizes the speed at execution time.
+以下のような用途に向いています。
 
-External functions can be added.
+- 発生条件チェックを毎フレーム行う
+- ダメージ計算式を文字列化して外部に出したい
+
+
+
+A system of expression interpretation that emphasizes the speed at execution time. Should be 10 times faster than Lua.
+
+External functions can be added and can return integers or strings.
 
 There is no heap allocation except when you first create a parse tree.
+
+It is suitable for the following applications.
+
+-Perform an occurrence condition check every frame
+-I want to convert the damage formula into a string and put it out
 
 ## Description
 
