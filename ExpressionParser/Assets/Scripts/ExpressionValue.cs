@@ -193,7 +193,7 @@ namespace expression_parser
         public static ExpressionValue operator /(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return new ExpressionValue(left.intValue * right.intValue);
+                return new ExpressionValue(left.intValue / right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:/ left:{0} right:{1}", left, right));
@@ -256,7 +256,7 @@ namespace expression_parser
         public static ExpressionValue operator !=(ExpressionValue left, ExpressionValue right)
         {
             if (left.type == ValueType.IntValue && right.type == ValueType.IntValue) {
-                return new ExpressionValue(left.intValue == right.intValue);
+                return new ExpressionValue(left.intValue != right.intValue);
             }
 
             throw new System.Exception(string.Format("計算できない式です op:!= left:{0} right:{1}", left, right));

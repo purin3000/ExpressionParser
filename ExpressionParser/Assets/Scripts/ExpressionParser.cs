@@ -37,6 +37,45 @@ public class ExpressionParser
     readonly static Regex regHexNumber = new Regex(@"^0[xX][\dabcdefABCDEF]+$");
     readonly static Regex regString = new Regex(@"^""[^""]+""$");
     readonly static Regex regVariableName = new Regex(@"^[^\d][\w_]*$");
+    readonly static Regex regBool = new Regex(@"true|True|TRUE|false|False|FALSE");
+
+    //[UnityEditor.MenuItem("Test/Expr")]
+    //static void TestExpr()
+    //{
+    //    var parser = new ExpressionParser();
+    //    foreach (var expr in new string[] {
+    //       "1+2",
+    //       "2+3*4",
+    //       "((2+3)*4)",
+    //       "((2+3)*4) != 0",
+    //       "((2+3)*4) == 0",
+    //       "!!0",
+    //       "!!!0",
+    //       "!1",
+    //       "1 || 0",
+    //       "1 || 1",
+    //       "!1 && !1",
+    //       "!0 && !0",
+    //       "!0 && !1",
+    //       "!1 && !0",
+    //       "!0 && !0 && !0",
+    //       "!0 && !1 && !0",
+    //       "(!0 && !1) && !0",
+    //       "(!0 && !1 && !0)",
+    //       "!0 && (!1 && !0)",
+    //       "(!0 && !1 && !0)",
+    //       "!(!0 && !1 && !0)",
+    //       "(!1) && (!1)",
+    //       "(!0) && (!0)",
+    //       "(!0) && (!1)",
+    //       "(!1) && (!0)",
+    //       "(!0) && (!0) && (!0)",
+    //       "(!0) && (!1) && (!0)",
+    //   }) {
+    //        Debug.Log($"{expr} = {parser.Parse(expr).intValue}");
+
+    //    }
+    //}
 
     enum CommandType
     {
@@ -60,6 +99,8 @@ public class ExpressionParser
         And,
         Or,
         Not,
+
+        Bool,
 
         CallFunc,
     }
@@ -235,6 +276,13 @@ public class ExpressionParser
                         break;
                     }
 
+                case CommandType.Bool: {
+                        Profile.Begin("Bool");
+                        _calcStack.Push(_valueList[valueIndex++]);
+                        Profile.End();
+                        break;
+                    }
+
                 case CommandType.CallFunc: {
                         //Profile.Begin("arg");
                         var info = _valueList[valueIndex++];
@@ -293,7 +341,7 @@ public class ExpressionParser
         _calcStack.Clear();
 
         _argList.Clear();
-        for (int i=0 ; i<10 ; ++i) {
+        for (int i = 0; i < 10; ++i) {
             _argList.Add(ExpressionValue.None);
         }
 
@@ -421,24 +469,31 @@ public class ExpressionParser
             } else {
                 throw new System.Exception("カッコが閉じられていません");
             }
-        } else if (code == "!") {
-            callExprFunc(parseExpr, CommandType.Not, "否定式に問題があります");
+
+            //} else if (code == "!") {
+            //    callExprFunc(parseExpr, CommandType.Not, "否定式に問題があります");
+
         } else {
             parseValue();
         }
     }
 
-    // <value> ::= <value2> | ('+' | '-') <value>
+    // <value> ::= <value2> | ('+' | '-' | '!') <factor>
     void parseValue()
     {
         if (_pos < _words.Length && _words[_pos] == "+") {
             ++_pos;
-            parseValue();
+            parseFactor();
 
         } else if (_pos < _words.Length && _words[_pos] == "-") {
             ++_pos;
-            parseValue();
+            parseFactor();
             _commandList.Add(CommandType.PrevMinOp);
+
+        } else if (_pos < _words.Length && _words[_pos] == "!") {
+            ++_pos;
+            parseFactor();
+            _commandList.Add(CommandType.Not);
 
         } else {
             parseValue2();
@@ -452,6 +507,8 @@ public class ExpressionParser
 
         if (regString.IsMatch(code)) {
             parseString();
+        } else if (regBool.IsMatch(code)) {
+            parseBool();
         } else if (regVariableName.IsMatch(code)) {
             parseFuncCall();
         } else {
@@ -484,6 +541,14 @@ public class ExpressionParser
         var code = _words[_pos++];
         _commandList.Add(CommandType.Value);
         _valueList.Add(new ExpressionValue(code.Substring(1, code.Length - 2)));
+    }
+
+    // <bool> ::= true(True, TRUE) | false(False, FALSE)
+    void parseBool()
+    {
+        var code = _words[_pos++];
+        _commandList.Add(CommandType.Bool);
+        _valueList.Add(new ExpressionValue(System.Convert.ToBoolean(code)));
     }
 
     // <func_call> ::= <variableName> '(' <parameter_list> ')'
