@@ -30,8 +30,9 @@ It is suitable for the following applications.
 
 | Type | Description | Example |
 | ---- | ---- | ---- |
-| Value type | int | 10, 0xA |
-| String type | string | "str" |
+| Value | int | 10, 0xA |
+| Value | bool | true, True, TRUE ... |
+| String | string | "str" |
 | Operator | +,-,*,/,%,!,(,) | (-1 + 2) * 3 |
 | Comparative expressions | ==,!=,<,<=,>,>= | 2 < 4 |
 
