@@ -2,29 +2,31 @@
 
 ## Overview
 
-実行時の速度を重視した式解釈の仕組み。Luaの10倍以上早いはず。
 
-外部から関数を追加が可能で、整数もしくは文字列を返すことができます。
+式を評価します。
 
-最初に構文木を作る時以外はヒープのアロケートが入りません。
+ランタイムでの条件判定や、動的な計算式の実装に使用することが出来ます。
 
-以下のような用途に向いています。
+最初に構文木を作る時以外はアロケートが入らず、実行速度はLuaの10倍以上高速です。
 
-- 発生条件チェックを毎フレーム行う
+独自の関数を追加することが出来ます。
+
+例えば以下のような用途に向いています。
+
+- 条件チェックを毎フレーム行う
 - ダメージ計算式を文字列化して外部に出したい
 
 
+Evaluates an expression. It can be used to make conditional decisions at runtime and to implement dynamic expressions.
 
-A system of expression interpretation that emphasizes the speed at execution time. Should be 10 times faster than Lua.
+No allocations except when first creating the syntax tree, and execution speed is 10 times faster than Lua.
 
-External functions can be added and can return integers or strings.
+You can add your own functions.
 
-There is no heap allocation except when you first create a parse tree.
+For example, it is suitable for the following applications
 
-It is suitable for the following applications.
-
--Perform an occurrence condition check every frame
--I want to convert the damage formula into a string and put it out
+- Perform conditional checks every frame
+- To output the damage calculation formula as a string.
 
 ## Description
 
