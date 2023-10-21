@@ -14,7 +14,7 @@ namespace ExpressionParser {
 	public delegate ExpressionValue ExpressionParserFunc(List<ExpressionValue> args, int argc);
 
 	public class ExpressionParser {
-		private enum CommandType {
+		public enum CommandType {
 			None,
 
 			Value,
@@ -41,6 +41,29 @@ namespace ExpressionParser {
 			CallFunc
 		}
 
+		// エラーメッセージ用
+		private static readonly Dictionary<CommandType, string> CODE_STRING = new() {
+			// { CommandType.None, "None" },
+			// { CommandType.Value, "Value" },
+			{ CommandType.AddOp, "+" },
+			{ CommandType.SubOp, "-" },
+			{ CommandType.MulOp, "*" },
+			{ CommandType.DivOp, "/" },
+			{ CommandType.ModOp, "%" },
+			{ CommandType.PrevMinOp, "-" },
+			{ CommandType.EQ, "==" },
+			{ CommandType.NEQ, "!=" },
+			{ CommandType.GT, ">" },
+			{ CommandType.GEQ, ">=" },
+			{ CommandType.LT, "<" },
+			{ CommandType.LEQ, "<=" },
+			{ CommandType.And, "&&" },
+			{ CommandType.Or, "||" },
+			{ CommandType.Not, "!" },
+			// { CommandType.Bool, "" },
+			// { CommandType.CallFunc "" },
+		};
+
 		private static readonly Regex REG_RESERVE = new(@"(==|!=|<=|>=|&&|\|\||[+\-/*()%<>!,])");
 		private static readonly Regex REG_DEC_NUMBER = new(@"^\d+$");
 		private static readonly Regex REG_HEX_NUMBER = new(@"^0[xX][\dabcdefABCDEF]+$");
@@ -65,7 +88,7 @@ namespace ExpressionParser {
 			get {
 				if (_calcStack.Count == 1) return _calcStack.Peek();
 
-				return ExpressionValue.None;
+				return ExpressionValue.NONE;
 			}
 		}
 
@@ -239,7 +262,7 @@ namespace ExpressionParser {
 								for (var i = info.ArgCount - 1; 0 <= i; --i) _argList[i] = _calcStack.Pop();
 
 								Profile.Begin("call");
-								var ret = info.func(_argList, info.ArgCount);
+								var ret = info.Func(_argList, info.ArgCount);
 								Profile.End();
 
 								_calcStack.Push(ret);
@@ -247,14 +270,14 @@ namespace ExpressionParser {
 								Profile.End();
 							}
 							else {
-								throw new Exception($"引数が多すぎます Capacity:{_argList.Count}");
+								throw new ArgumentCapacityError(_argList.Count);
 							}
 
 							break;
 						}
 					}
 
-				if (_calcStack.Count != 1) throw new Exception("解析に失敗しました");
+				if (_calcStack.Count != 1) throw new ExpressionErrors();
 			}
 			catch (Exception e) {
 				Debug.Log(e.Message);
@@ -288,7 +311,7 @@ namespace ExpressionParser {
 			_calcStack.Clear();
 
 			_argList.Clear();
-			for (var i = 0; i < 10; ++i) _argList.Add(ExpressionValue.None);
+			for (var i = 0; i < 10; ++i) _argList.Add(ExpressionValue.NONE);
 
 			_words = REG_RESERVE.Split(_expr).Select(str => str.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
 
@@ -298,7 +321,7 @@ namespace ExpressionParser {
 
 					ParseExpr();
 
-					if (old == _pos) throw new Exception("解析失敗。posが進んでいません");
+					if (old == _pos) throw new PosError();
 				}
 			}
 			catch (Exception e) {
@@ -307,7 +330,7 @@ namespace ExpressionParser {
 			}
 		}
 
-		private void CallExprFunc(Action func, CommandType type, string errorMessage) {
+		private void CallExprFunc(Action func, CommandType type) {
 			// ポインタを一つ進めて
 			++_pos;
 			if (_pos < _words.Length) {
@@ -317,7 +340,7 @@ namespace ExpressionParser {
 				_commandList.Add(type);
 			}
 			else {
-				throw new Exception(errorMessage);
+				throw new ExprError($"{CODE_STRING[type]} の右側の式に問題があります");
 			}
 		}
 
@@ -328,9 +351,9 @@ namespace ExpressionParser {
 			while (_pos < _words.Length) {
 				var code = _words[_pos];
 				if (code == "&&")
-					CallExprFunc(ParseTerm2, CommandType.And, "&& の右側の式に問題があります");
+					CallExprFunc(ParseTerm2, CommandType.And);
 				else if (code == "||")
-					CallExprFunc(ParseTerm2, CommandType.Or, "|| の右側の式に問題があります");
+					CallExprFunc(ParseTerm2, CommandType.Or);
 				else
 					break;
 			}
@@ -343,9 +366,9 @@ namespace ExpressionParser {
 			while (_pos < _words.Length) {
 				var code = _words[_pos];
 				if (code == "+")
-					CallExprFunc(ParseTerm, CommandType.AddOp, "+ の右側の式に問題があります");
+					CallExprFunc(ParseTerm, CommandType.AddOp);
 				else if (code == "-")
-					CallExprFunc(ParseTerm, CommandType.SubOp, "- の右側の式に問題があります");
+					CallExprFunc(ParseTerm, CommandType.SubOp);
 				else
 					break;
 			}
@@ -358,11 +381,11 @@ namespace ExpressionParser {
 			while (_pos < _words.Length) {
 				var code = _words[_pos];
 				if (code == "*")
-					CallExprFunc(ParseComp, CommandType.MulOp, "* の右側の式に問題があります");
+					CallExprFunc(ParseComp, CommandType.MulOp);
 				else if (code == "/")
-					CallExprFunc(ParseComp, CommandType.DivOp, "/ の右側の式に問題があります");
+					CallExprFunc(ParseComp, CommandType.DivOp);
 				else if (code == "%")
-					CallExprFunc(ParseComp, CommandType.ModOp, "% の右側の式に問題があります");
+					CallExprFunc(ParseComp, CommandType.ModOp);
 				else
 					break;
 			}
@@ -375,16 +398,16 @@ namespace ExpressionParser {
 
 			if (_pos < _words.Length) {
 				if (_words[_pos] == "==")
-					CallExprFunc(ParseFactor, CommandType.EQ, "== の右側の式に問題があります");
+					CallExprFunc(ParseFactor, CommandType.EQ);
 				else if (_words[_pos] == "!=")
-					CallExprFunc(ParseFactor, CommandType.NEQ, "!= の右側の式に問題があります");
+					CallExprFunc(ParseFactor, CommandType.NEQ);
 				else if (_words[_pos] == "<")
-					CallExprFunc(ParseFactor, CommandType.LT, "< の右側の式に問題があります");
+					CallExprFunc(ParseFactor, CommandType.LT);
 				else if (_words[_pos] == ">")
-					CallExprFunc(ParseFactor, CommandType.GT, "> の右側の式に問題があります");
+					CallExprFunc(ParseFactor, CommandType.GT);
 				else if (_words[_pos] == "<=")
-					CallExprFunc(ParseFactor, CommandType.LEQ, "<= の右側の式に問題があります");
-				else if (_words[_pos] == ">=") CallExprFunc(ParseFactor, CommandType.GEQ, ">= の右側の式に問題があります");
+					CallExprFunc(ParseFactor, CommandType.LEQ);
+				else if (_words[_pos] == ">=") CallExprFunc(ParseFactor, CommandType.GEQ);
 			}
 		}
 
@@ -400,7 +423,7 @@ namespace ExpressionParser {
 				if (_pos < _words.Length && _words[_pos] == ")")
 					++_pos;
 				else
-					throw new Exception("カッコが閉じられていません");
+					throw new ExprError("カッコが閉じられていません");
 
 				//} else if (code == "!") {
 				//    callExprFunc(parseExpr, CommandType.Not, "否定式に問題があります");
@@ -459,7 +482,7 @@ namespace ExpressionParser {
 				_valueList.Add(new ExpressionValue(Convert.ToInt32(code.Substring(2, code.Length - 2), 16)));
 			}
 			else {
-				throw new Exception("値ではありません str:" + code);
+				throw new ExprError("値ではありません str:" + code);
 			}
 		}
 
@@ -482,9 +505,9 @@ namespace ExpressionParser {
 		private void ParseFuncCall() {
 			var funcName = _words[_pos++];
 
-			if (!REG_VARIABLE_NAME.IsMatch(funcName)) throw new Exception("関数名に問題があります FuncName:" + funcName);
+			if (!REG_VARIABLE_NAME.IsMatch(funcName)) throw new FuncError("関数名に問題があります", funcName);
 
-			if (_words.Length <= _pos) throw new Exception("関数の開始カッコがありません FuncName:" + funcName);
+			if (_words.Length <= _pos) throw new FuncError("関数の開始カッコがありません", funcName);
 
 			if (_pos < _words.Length && _words[_pos++] == "(") {
 				_parameterCounter.Push(0);
@@ -499,15 +522,15 @@ namespace ExpressionParser {
 						_valueList.Add(new ExpressionValue(func, count));
 					}
 					else {
-						throw new Exception("未登録の関数です FuncName:" + funcName);
+						throw new FuncError("未登録の関数です", funcName);
 					}
 				}
 				else {
-					throw new Exception("関数がカッコで閉じていません FuncName:" + funcName);
+					throw new FuncError("関数がカッコで閉じられていません", funcName);
 				}
 			}
 			else {
-				throw new Exception("関数の記述に問題があります FuncName:" + funcName);
+				throw new FuncError("関数の記述に問題があります", funcName);
 			}
 		}
 

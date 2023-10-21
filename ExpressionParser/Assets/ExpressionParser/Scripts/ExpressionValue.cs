@@ -34,48 +34,44 @@ namespace ExpressionParser {
 			FuncName,
 		}
 
-		private readonly object objValue;
+		public static readonly ExpressionValue NONE = new(ValueType.None, 0, string.Empty);
 
-		public ValueType Type { get; }
+		private readonly object _objValue;
+		public readonly ValueType Type;
+		public readonly int IntValue;
 
 		public int ArgCount => IntValue;
-
-		public int IntValue { get; }
-
-		public string StringValue => (string)objValue;
-
-		public ExpressionParserFunc func => (ExpressionParserFunc)objValue;
-
-		public static readonly ExpressionValue None = new(ValueType.None, 0, string.Empty);
+		public string StringValue => (string)_objValue;
+		public ExpressionParserFunc Func => (ExpressionParserFunc)_objValue;
 
 		public ExpressionValue(ValueType type, int intVal, object objVal) {
 			Type = type;
 			IntValue = intVal;
-			objValue = objVal;
+			_objValue = objVal;
 		}
 
 		public ExpressionValue(bool val) {
 			Type = ValueType.IntValue;
 			IntValue = val ? 1 : 0;
-			objValue = string.Empty;
+			_objValue = string.Empty;
 		}
 
 		public ExpressionValue(int val) {
 			Type = ValueType.IntValue;
 			IntValue = val;
-			objValue = string.Empty;
+			_objValue = string.Empty;
 		}
 
 		public ExpressionValue(string str) {
 			Type = ValueType.StringValue;
 			IntValue = 0;
-			objValue = str;
+			_objValue = str;
 		}
 
 		public ExpressionValue(ExpressionParserFunc func, int argCount) {
 			Type = ValueType.FuncName;
 			IntValue = argCount;
-			objValue = func;
+			_objValue = func;
 		}
 
 		public override string ToString() {
@@ -87,13 +83,13 @@ namespace ExpressionParser {
 					return "string:" + StringValue;
 
 				case ValueType.FuncName:
-					return $"func:{func} argc:{ArgCount}";
+					return $"func:{Func} argc:{ArgCount}";
 
 				case ValueType.None:
 					return "type:None";
 
 				default:
-					throw new System.Exception("未知のタイプです " + Type);
+					throw new ValueTypeError(Type);
 			}
 		}
 
@@ -118,13 +114,14 @@ namespace ExpressionParser {
 			return base.Equals(obj);
 		}
 
-		public override int GetHashCode() {
-			return base.GetHashCode();
-		}
+		public override int GetHashCode() => base.GetHashCode();
 
 		public static ExpressionValue operator !(ExpressionValue right) {
-			if (right.Type == ValueType.IntValue) return new ExpressionValue(right.IntValue == 0);
-			throw new System.Exception($"計算できない式です op:! right:{right}");
+			if (right.Type == ValueType.IntValue) {
+				return new ExpressionValue(right.IntValue == 0);
+			}
+
+			throw new ExprError("!", right);
 		}
 
 		public static ExpressionValue operator -(ExpressionValue right) {
@@ -132,7 +129,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(-right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:- right:{right}");
+			throw new ExprError("-", right);
 		}
 
 		public static ExpressionValue operator +(ExpressionValue left, ExpressionValue right) {
@@ -148,7 +145,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.StringValue + right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:+ left:{left} right:{right}");
+			throw new ExprError("+", left, right);
 		}
 
 		public static ExpressionValue operator -(ExpressionValue left, ExpressionValue right) {
@@ -156,7 +153,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue - right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:- left:{left} right:{right}");
+			throw new ExprError("-", left, right);
 		}
 
 		public static ExpressionValue operator *(ExpressionValue left, ExpressionValue right) {
@@ -164,7 +161,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue * right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:* left:{left} right:{right}");
+			throw new ExprError("*", left, right);
 		}
 
 		public static ExpressionValue operator /(ExpressionValue left, ExpressionValue right) {
@@ -172,7 +169,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue / right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:/ left:{left} right:{right}");
+			throw new ExprError("/", left, right);
 		}
 
 		public static ExpressionValue operator %(ExpressionValue left, ExpressionValue right) {
@@ -180,7 +177,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue % right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:% left:{left} right:{right}");
+			throw new ExprError("%", left, right);
 		}
 
 		public static ExpressionValue operator <(ExpressionValue left, ExpressionValue right) {
@@ -188,7 +185,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue < right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:< left:{left} right:{right}");
+			throw new ExprError("<", left, right);
 		}
 
 		public static ExpressionValue operator >(ExpressionValue left, ExpressionValue right) {
@@ -196,7 +193,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue > right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:> left:{left} right:{right}");
+			throw new ExprError(">", left, right);
 		}
 
 		public static ExpressionValue operator <=(ExpressionValue left, ExpressionValue right) {
@@ -204,7 +201,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue <= right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:<= left:{left} right:{right}");
+			throw new ExprError("<=", left, right);
 		}
 
 		public static ExpressionValue operator >=(ExpressionValue left, ExpressionValue right) {
@@ -212,7 +209,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue >= right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:>= left:{left} right:{right}");
+			throw new ExprError(">=", left, right);
 		}
 
 		public static ExpressionValue operator ==(ExpressionValue left, ExpressionValue right) {
@@ -220,7 +217,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue == right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:== left:{left} right:{right}");
+			throw new ExprError("==", left, right);
 		}
 
 		public static ExpressionValue operator !=(ExpressionValue left, ExpressionValue right) {
@@ -228,19 +225,19 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue != right.IntValue);
 			}
 
-			throw new System.Exception($"計算できない式です op:!= left:{left} right:{right}");
+			throw new ExprError("!=", left, right);
 		}
 
 		public static bool operator true(ExpressionValue right) {
 			if (right.Type == ValueType.IntValue) return right.IntValue != 0;
 			if (right.Type == ValueType.StringValue) return !string.IsNullOrEmpty(right.StringValue);
-			throw new System.Exception($"計算できない式です op:true right:{right}");
+			throw new ExprError("true", right);
 		}
 
 		public static bool operator false(ExpressionValue right) {
 			if (right.Type == ValueType.IntValue) return right.IntValue == 0;
 			if (right.Type == ValueType.StringValue) return string.IsNullOrEmpty(right.StringValue);
-			throw new System.Exception($"計算できない式です op:false right:{right}");
+			throw new ExprError("false", right);
 		}
 
 		public static ExpressionValue operator &(ExpressionValue left, ExpressionValue right) {
