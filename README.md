@@ -2,10 +2,7 @@
 
 ## Overview
 
-
-式を評価します。
-
-ランタイムでの条件判定や、動的な計算式の実装に使用することが出来ます。
+式を評価します。ランタイムでの条件判定や、動的な計算式の実装に使用することが出来ます。
 
 最初に構文木を作る時以外はアロケートが入らず、実行速度はLuaの10倍以上高速です。
 
@@ -27,6 +24,7 @@ For example, it is suitable for the following applications
 
 - Perform conditional checks every frame
 - To output the damage calculation formula as a string.
+
 
 ## Description
 
