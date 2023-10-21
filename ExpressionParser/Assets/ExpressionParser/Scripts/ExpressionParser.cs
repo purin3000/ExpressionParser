@@ -270,14 +270,14 @@ namespace ExpressionParser {
 								Profile.End();
 							}
 							else {
-								throw new ArgumentCapacityError(_argList.Count);
+								throw new ExpressionError(ErrorCode.ArgumentCapacity);
 							}
 
 							break;
 						}
 					}
 
-				if (_calcStack.Count != 1) throw new ExpressionErrors();
+				if (_calcStack.Count != 1) throw new ExpressionError(ErrorCode.ParseError);
 			}
 			catch (Exception e) {
 				Debug.Log(e.Message);
@@ -321,7 +321,7 @@ namespace ExpressionParser {
 
 					ParseExpr();
 
-					if (old == _pos) throw new PosError();
+					if (old == _pos) throw new ExpressionError(ErrorCode.PosError);
 				}
 			}
 			catch (Exception e) {
@@ -340,7 +340,7 @@ namespace ExpressionParser {
 				_commandList.Add(type);
 			}
 			else {
-				throw new ExprError($"{CODE_STRING[type]} の右側の式に問題があります");
+				throw new ExpressionError(ErrorCode.CodeString, CODE_STRING[type]);
 			}
 		}
 
@@ -423,7 +423,7 @@ namespace ExpressionParser {
 				if (_pos < _words.Length && _words[_pos] == ")")
 					++_pos;
 				else
-					throw new ExprError("カッコが閉じられていません");
+					throw new ExpressionError(ErrorCode.ParenthesesError);
 
 				//} else if (code == "!") {
 				//    callExprFunc(parseExpr, CommandType.Not, "否定式に問題があります");
@@ -482,7 +482,7 @@ namespace ExpressionParser {
 				_valueList.Add(new ExpressionValue(Convert.ToInt32(code.Substring(2, code.Length - 2), 16)));
 			}
 			else {
-				throw new ExprError("値ではありません str:" + code);
+				throw new ExpressionError(ErrorCode.NotValue, code);
 			}
 		}
 
@@ -505,9 +505,9 @@ namespace ExpressionParser {
 		private void ParseFuncCall() {
 			var funcName = _words[_pos++];
 
-			if (!REG_VARIABLE_NAME.IsMatch(funcName)) throw new FuncError("関数名に問題があります", funcName);
+			if (!REG_VARIABLE_NAME.IsMatch(funcName)) throw new ExpressionError(ErrorCode.FuncName, funcName);
 
-			if (_words.Length <= _pos) throw new FuncError("関数の開始カッコがありません", funcName);
+			if (_words.Length <= _pos) throw new ExpressionError(ErrorCode.FuncParenthesesError, funcName);
 
 			if (_pos < _words.Length && _words[_pos++] == "(") {
 				_parameterCounter.Push(0);
@@ -522,15 +522,15 @@ namespace ExpressionParser {
 						_valueList.Add(new ExpressionValue(func, count));
 					}
 					else {
-						throw new FuncError("未登録の関数です", funcName);
+						throw new ExpressionError(ErrorCode.UnknownFunc, funcName);
 					}
 				}
 				else {
-					throw new FuncError("関数がカッコで閉じられていません", funcName);
+					throw new ExpressionError(ErrorCode.FuncEndParenthesesError, funcName);
 				}
 			}
 			else {
-				throw new FuncError("関数の記述に問題があります", funcName);
+				throw new ExpressionError(ErrorCode.FuncError, funcName);
 			}
 		}
 

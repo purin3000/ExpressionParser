@@ -89,7 +89,7 @@ namespace ExpressionParser {
 					return "type:None";
 
 				default:
-					throw new ValueTypeError(Type);
+					throw new ExpressionError(ErrorCode.UnknownValueType, Type.ToString());
 			}
 		}
 
@@ -114,14 +114,14 @@ namespace ExpressionParser {
 			return base.Equals(obj);
 		}
 
-		public override int GetHashCode() => base.GetHashCode();
+		public override int GetHashCode() => (int)Type + IntValue + StringValue.GetHashCode();
 
 		public static ExpressionValue operator !(ExpressionValue right) {
 			if (right.Type == ValueType.IntValue) {
 				return new ExpressionValue(right.IntValue == 0);
 			}
 
-			throw new ExprError("!", right);
+			throw new ExpressionError(ErrorCode.OpNot, right);
 		}
 
 		public static ExpressionValue operator -(ExpressionValue right) {
@@ -129,7 +129,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(-right.IntValue);
 			}
 
-			throw new ExprError("-", right);
+			throw new ExpressionError(ErrorCode.OpPreMinus, right);
 		}
 
 		public static ExpressionValue operator +(ExpressionValue left, ExpressionValue right) {
@@ -145,7 +145,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.StringValue + right.IntValue);
 			}
 
-			throw new ExprError("+", left, right);
+			throw new ExpressionError(ErrorCode.OpAddError, left, right);
 		}
 
 		public static ExpressionValue operator -(ExpressionValue left, ExpressionValue right) {
@@ -153,7 +153,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue - right.IntValue);
 			}
 
-			throw new ExprError("-", left, right);
+			throw new ExpressionError(ErrorCode.OpSubError, left, right);
 		}
 
 		public static ExpressionValue operator *(ExpressionValue left, ExpressionValue right) {
@@ -161,7 +161,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue * right.IntValue);
 			}
 
-			throw new ExprError("*", left, right);
+			throw new ExpressionError(ErrorCode.OpMulError, left, right);
 		}
 
 		public static ExpressionValue operator /(ExpressionValue left, ExpressionValue right) {
@@ -169,7 +169,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue / right.IntValue);
 			}
 
-			throw new ExprError("/", left, right);
+			throw new ExpressionError(ErrorCode.OpDivError, left, right);
 		}
 
 		public static ExpressionValue operator %(ExpressionValue left, ExpressionValue right) {
@@ -177,7 +177,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue % right.IntValue);
 			}
 
-			throw new ExprError("%", left, right);
+			throw new ExpressionError(ErrorCode.OpModError, left, right);
 		}
 
 		public static ExpressionValue operator <(ExpressionValue left, ExpressionValue right) {
@@ -185,7 +185,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue < right.IntValue);
 			}
 
-			throw new ExprError("<", left, right);
+			throw new ExpressionError(ErrorCode.OpLT, left, right);
 		}
 
 		public static ExpressionValue operator >(ExpressionValue left, ExpressionValue right) {
@@ -193,7 +193,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue > right.IntValue);
 			}
 
-			throw new ExprError(">", left, right);
+			throw new ExpressionError(ErrorCode.OpGT, left, right);
 		}
 
 		public static ExpressionValue operator <=(ExpressionValue left, ExpressionValue right) {
@@ -201,7 +201,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue <= right.IntValue);
 			}
 
-			throw new ExprError("<=", left, right);
+			throw new ExpressionError(ErrorCode.OpLE, left, right);
 		}
 
 		public static ExpressionValue operator >=(ExpressionValue left, ExpressionValue right) {
@@ -209,7 +209,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue >= right.IntValue);
 			}
 
-			throw new ExprError(">=", left, right);
+			throw new ExpressionError(ErrorCode.OpGE, left, right);
 		}
 
 		public static ExpressionValue operator ==(ExpressionValue left, ExpressionValue right) {
@@ -217,7 +217,7 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue == right.IntValue);
 			}
 
-			throw new ExprError("==", left, right);
+			throw new ExpressionError(ErrorCode.OpEQ, left, right);
 		}
 
 		public static ExpressionValue operator !=(ExpressionValue left, ExpressionValue right) {
@@ -225,19 +225,19 @@ namespace ExpressionParser {
 				return new ExpressionValue(left.IntValue != right.IntValue);
 			}
 
-			throw new ExprError("!=", left, right);
+			throw new ExpressionError(ErrorCode.OpNEQ, left, right);
 		}
 
 		public static bool operator true(ExpressionValue right) {
 			if (right.Type == ValueType.IntValue) return right.IntValue != 0;
 			if (right.Type == ValueType.StringValue) return !string.IsNullOrEmpty(right.StringValue);
-			throw new ExprError("true", right);
+			throw new ExpressionError(ErrorCode.OpTrue, right);
 		}
 
 		public static bool operator false(ExpressionValue right) {
 			if (right.Type == ValueType.IntValue) return right.IntValue == 0;
 			if (right.Type == ValueType.StringValue) return string.IsNullOrEmpty(right.StringValue);
-			throw new ExprError("false", right);
+			throw new ExpressionError(ErrorCode.OpFalse, right);
 		}
 
 		public static ExpressionValue operator &(ExpressionValue left, ExpressionValue right) {
